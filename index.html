@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Electrostática y Circuitos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col md:flex-row overflow-hidden font-sans">
+
+    <!-- Navigation Sidebar -->
+    <aside class="w-full md:w-80 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col shrink-0">
+        <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i class="fa-solid font-bold fa-bolt text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white leading-tight">ElectroCalc</h1>
+                <p class="text-xs text-slate-400">Física & Circuitos</p>
+            </div>
+        </div>
+
+        <nav class="p-3 flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar flex-1">
+            <button onclick="switchTab('coulomb')" id="tab-coulomb" class="tab-btn active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left w-full whitespace-nowrap bg-blue-600 text-white shadow-lg shadow-blue-600/20">
+                <i class="fa-solid fa-atom text-base w-5 text-center"></i>
+                <span>Ley de Coulomb</span>
+            </button>
+            <button onclick="switchTab('campo')" id="tab-campo" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left w-full whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                <i class="fa-solid fa-arrows-to-circle text-base w-5 text-center"></i>
+                <span>Campo Eléctrico</span>
+            </button>
+            <button onclick="switchTab('gauss')" id="tab-gauss" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left w-full whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                <i class="fa-solid fa-expand text-base w-5 text-center"></i>
+                <span>Flujo y Ley de Gauss</span>
+            </button>
+            <button onclick="switchTab('potencial')" id="tab-potencial" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left w-full whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                <i class="fa-solid fa-gauge-high text-base w-5 text-center"></i>
+                <span>Potencial Eléctrico</span>
+            </button>
+            <button onclick="switchTab('capacitores')" id="tab-capacitores" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-left w-full whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                <i class="fa-solid fa-microchip text-base w-5 text-center"></i>
+                <span>Capacitancia y Circuitos</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 hidden md:block">
+            <p class="font-semibold text-slate-400 mb-1">Constantes Universales:</p>
+            <p>$k_e = 8.9875 \times 10^9 \text{ N}\cdot\text{m}^2/\text{C}^2$</p>
+            <p>$\varepsilon_0 = 8.854 \times 10^{-12} \text{ F/m}$</p>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-900">
+        <div class="max-w-4xl mx-auto space-y-6">
+
+            <!-- 1. LEY DE COULOMB -->
+            <section id="module-coulomb" class="module-card block space-y-6">
+                <header class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-atom text-blue-500"></i> Ley de Coulomb
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Calcula la fuerza de atracción o repulsión entre dos cargas puntuales.</p>
+                </header>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400 mb-1">Fórmula General</p>
+                    <div class="text-lg font-mono text-blue-400">
+                        $$F = k_e \frac{|q_1 \cdot q_2|}{r^2}$$
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="font-semibold text-sm text-slate-300">Parámetros de Entrada</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Carga $q_1$ (Coulombs)</label>
+                            <div class="flex gap-2">
+                                <input type="number" step="any" id="coulomb-q1" value="1e-6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                <span class="text-xs text-slate-400 self-center">C</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Carga $q_2$ (Coulombs)</label>
+                            <div class="flex gap-2">
+                                <input type="number" step="any" id="coulomb-q2" value="2e-6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                <span class="text-xs text-slate-400 self-center">C</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Distancia $r$ (Metros)</label>
+                            <div class="flex gap-2">
+                                <input type="number" step="any" id="coulomb-r" value="0.5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                <span class="text-xs text-slate-400 self-center">m</span>
+                            </div>
+                        </div>
+
+                        <button onclick="calcularCoulomb()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200 shadow-lg shadow-blue-600/30">
+                            Calcular Fuerza
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-semibold text-sm text-slate-300 mb-4">Resultado del Cálculo</h3>
+                            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                                <p class="text-xs text-slate-400">Fuerza Eléctrica ($F$)</p>
+                                <p id="coulomb-result" class="text-2xl font-bold text-blue-400 font-mono">0.0719 N</p>
+                                <p id="coulomb-sci" class="text-xs font-mono text-slate-400">7.190e-2 N</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-blue-950/30 border border-blue-900/50 rounded-xl text-xs text-blue-300 flex gap-2 items-center">
+                            <i class="fa-solid fa-circle-info text-blue-400 text-base"></i>
+                            <span id="coulomb-type">Las cargas tienen el mismo signo: Fuerza de Repulsión.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. CAMPO ELÉCTRICO -->
+            <section id="module-campo" class="module-card hidden space-y-6">
+                <header class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-to-circle text-blue-500"></i> Campo Eléctrico ($E$)
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Calcula la intensidad del campo eléctrico creado por una carga o a partir de una fuerza.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Método 1: Por Carga Puntual</p>
+                        <div class="text-base font-mono text-blue-400">$$E = k_e \frac{|q|}{r^2}$$</div>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Método 2: Por Fuerza y Carga Próxima</p>
+                        <div class="text-base font-mono text-blue-400">$$E = \frac{F}{q_0}$$</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <div class="flex gap-4 border-b border-slate-800 pb-3">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="radio" name="campo-mode" value="puntual" checked onchange="toggleCampoInputs()" class="text-blue-600 focus:ring-0">
+                                Carga Puntual ($q, r$)
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="radio" name="campo-mode" value="fuerza" onchange="toggleCampoInputs()" class="text-blue-600 focus:ring-0">
+                                Fuerza y Carga Próxima ($F, q_0$)
+                            </label>
+                        </div>
+
+                        <div id="campo-inputs-puntual" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Carga Fuente $q$ (Coulombs)</label>
+                                <input type="number" step="any" id="campo-q" value="5e-9" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Distancia $r$ (Metros)</label>
+                                <input type="number" step="any" id="campo-r" value="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div id="campo-inputs-fuerza" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fuerza $F$ (Newtons)</label>
+                                <input type="number" step="any" id="campo-f" value="0.02" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Carga Prueba $q_0$ (Coulombs)</label>
+                                <input type="number" step="any" id="campo-q0" value="2e-6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button onclick="calcularCampo()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200">
+                            Calcular Campo Eléctrico
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-semibold text-sm text-slate-300 mb-4">Resultado</h3>
+                            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                                <p class="text-xs text-slate-400">Magnitud del Campo ($E$)</p>
+                                <p id="campo-result" class="text-2xl font-bold text-blue-400 font-mono">4493.78 N/C</p>
+                                <p id="campo-sci" class="text-xs font-mono text-slate-400">4.494e+3 N/C</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. FLUJO ELÉCTRICO Y LEY DE GAUSS -->
+            <section id="module-gauss" class="module-card hidden space-y-6">
+                <header class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-expand text-blue-500"></i> Flujo Eléctrico y Ley de Gauss
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Calcula el flujo eléctrico a través de una superficie o la carga encerrada.</p>
+                </header>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                    <p class="text-xs text-slate-400 mb-1">Ecuaciones</p>
+                    <div class="text-base font-mono text-blue-400">$$\Phi_E = E \cdot A \cdot \cos(\theta) = \frac{Q_{\text{enc}}}{\varepsilon_0}$$</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="font-semibold text-sm text-slate-300">Flujo Eléctrico ($\Phi_E$)</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Campo Eléctrico $E$ (N/C)</label>
+                            <input type="number" step="any" id="gauss-e" value="500" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Área $A$ ($\text{m}^2$)</label>
+                            <input type="number" step="any" id="gauss-a" value="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Ángulo $\theta$ (grados respecto a la normal)</label>
+                            <input type="number" step="any" id="gauss-angle" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                        </div>
+
+                        <button onclick="calcularGauss()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200">
+                            Calcular Flujo y Carga Encerrada
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="font-semibold text-sm text-slate-300">Resultados Obtenidos</h3>
+                        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                            <p class="text-xs text-slate-400">Flujo Eléctrico ($\Phi_E$)</p>
+                            <p id="gauss-flujo-res" class="text-xl font-bold text-blue-400 font-mono">1000 N·m²/C</p>
+                        </div>
+                        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                            <p class="text-xs text-slate-400">Carga Encerrada Equiv. ($Q_{\text{enc}}$)</p>
+                            <p id="gauss-qenc-res" class="text-xl font-bold text-indigo-400 font-mono">8.854e-9 C</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. POTENCIAL ELÉCTRICO -->
+            <section id="module-potencial" class="module-card hidden space-y-6">
+                <header class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high text-blue-500"></i> Potencial Eléctrico ($V$)
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Calcula el potencial o energía potencial eléctrica en un punto determinado.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Por Carga Puntual</p>
+                        <div class="text-base font-mono text-blue-400">$$V = k_e \frac{q}{r}$$</div>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Por Energía Potencial ($U$)</p>
+                        <div class="text-base font-mono text-blue-400">$$V = \frac{U}{q_0}$$</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <div class="flex gap-4 border-b border-slate-800 pb-3">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="radio" name="potencial-mode" value="puntual" checked onchange="togglePotencialInputs()" class="text-blue-600 focus:ring-0">
+                                Carga Puntual ($q, r$)
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                                <input type="radio" name="potencial-mode" value="energia" onchange="togglePotencialInputs()" class="text-blue-600 focus:ring-0">
+                                Energía Potencial ($U, q_0$)
+                            </label>
+                        </div>
+
+                        <div id="potencial-inputs-puntual" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Carga $q$ (Coulombs)</label>
+                                <input type="number" step="any" id="potencial-q" value="3e-6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Distancia $r$ (Metros)</label>
+                                <input type="number" step="any" id="potencial-r" value="0.2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div id="potencial-inputs-energia" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Energía Potencial $U$ (Joules)</label>
+                                <input type="number" step="any" id="potencial-u" value="0.05" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Carga $q_0$ (Coulombs)</label>
+                                <input type="number" step="any" id="potencial-q0" value="1e-6" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button onclick="calcularPotencial()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200">
+                            Calcular Potencial
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-semibold text-sm text-slate-300 mb-4">Resultado</h3>
+                            <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                                <p class="text-xs text-slate-400">Potencial Eléctrico ($V$)</p>
+                                <p id="potencial-result" class="text-2xl font-bold text-blue-400 font-mono">134813.28 V</p>
+                                <p id="potencial-sci" class="text-xs font-mono text-slate-400">1.348e+5 V</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. CAPACITANCIA Y CIRCUITOS (SERIE / PARALELO) -->
+            <section id="module-capacitores" class="module-card hidden space-y-6">
+                <header class="border-b border-slate-800 pb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-blue-500"></i> Capacitancia y Circuitos
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">Cálculo individual y equivalente para circuitos de capacitores en serie o paralelo.</p>
+                </header>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Capacitores en Serie</p>
+                        <div class="text-sm font-mono text-blue-400">$$\frac{1}{C_{eq}} = \sum \frac{1}{C_i}$$</div>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                        <p class="text-xs text-slate-400 mb-1">Capacitores en Paralelo</p>
+                        <div class="text-sm font-mono text-blue-400">$$C_{eq} = \sum C_i$$</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                        <div class="flex gap-4">
+                            <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                                <input type="radio" name="cap-config" value="serie" checked class="text-blue-600 focus:ring-0">
+                                Configuración Serie
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-300 cursor-pointer">
+                                <input type="radio" name="cap-config" value="paralelo" class="text-blue-600 focus:ring-0">
+                                Configuración Paralelo
+                            </label>
+                        </div>
+                        <button onclick="addCapacitorInput()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition border border-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Agregar Capacitor
+                        </button>
+                    </div>
+
+                    <div id="capacitors-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div class="cap-item bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 relative">
+                            <div class="flex justify-between items-center text-xs text-slate-400">
+                                <span>Capacitor $C_1$ ($\mu\text{F}$)</span>
+                            </div>
+                            <input type="number" step="any" value="10" class="cap-val w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none">
+                        </div>
+                        <div class="cap-item bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 relative">
+                            <div class="flex justify-between items-center text-xs text-slate-400">
+                                <span>Capacitor $C_2$ ($\mu\text{F}$)</span>
+                            </div>
+                            <input type="number" step="any" value="20" class="cap-val w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button onclick="calcularCircuitosCapacitancia()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200 shadow-lg shadow-blue-600/30">
+                        Calcular Capacitancia Equivalente
+                    </button>
+
+                    <div class="p-4 bg-slate-900 rounded-xl border border-slate-800 text-center space-y-2">
+                        <p class="text-xs text-slate-400">Capacitancia Equivalente Total ($C_{eq}$)</p>
+                        <p id="cap-eq-result" class="text-2xl font-bold text-blue-400 font-mono">6.67 μF</p>
+                        <p id="cap-eq-farads" class="text-xs font-mono text-slate-400">6.667e-6 Faradios (F)</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Physical Constants
+        const k_e = 8.9875517923e9; // N·m²/C²
+        const eps_0 = 8.8541878128e-12; // F/m
+
+        // Switch Navigation Tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.module-card').forEach(card => card.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-600/20');
+                btn.classList.add('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-900');
+            });
+
+            document.getElementById(`module-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-600/20');
+            activeBtn.classList.remove('text-slate-400', 'hover:text-slate-200', 'hover:bg-slate-900');
+        }
+
+        // Helper: Format to Scientific Notation
+        function toSci(num) {
+            return num.toExponential(3);
+        }
+
+        // 1. LEY DE COULOMB
+        function calcularCoulomb() {
+            const q1 = parseFloat(document.getElementById('coulomb-q1').value);
+            const q2 = parseFloat(document.getElementById('coulomb-q2').value);
+            const r = parseFloat(document.getElementById('coulomb-r').value);
+
+            if (isNaN(q1) || isNaN(q2) || isNaN(r) || r <= 0) {
+                alert('Ingresa valores válidos (Distancia r debe ser mayor a 0).');
+                return;
+            }
+
+            const force = k_e * (Math.abs(q1 * q2) / Math.pow(r, 2));
+
+            document.getElementById('coulomb-result').innerText = `${force.toFixed(4)} N`;
+            document.getElementById('coulomb-sci').innerText = `${toSci(force)} N`;
+
+            const typeText = (q1 * q2 > 0) 
+                ? "Las cargas tienen el mismo signo: Fuerza de Repulsión." 
+                : "Las cargas tienen signos opuestos: Fuerza de Atracción.";
+            document.getElementById('coulomb-type').innerText = typeText;
+        }
+
+        // 2. CAMPO ELÉCTRICO
+        function toggleCampoInputs() {
+            const mode = document.querySelector('input[name="campo-mode"]:checked').value;
+            if (mode === 'puntual') {
+                document.getElementById('campo-inputs-puntual').classList.remove('hidden');
+                document.getElementById('campo-inputs-fuerza').classList.add('hidden');
+            } else {
+                document.getElementById('campo-inputs-puntual').classList.add('hidden');
+                document.getElementById('campo-inputs-fuerza').classList.remove('hidden');
+            }
+        }
+
+        function calcularCampo() {
+            const mode = document.querySelector('input[name="campo-mode"]:checked').value;
+            let eField = 0;
+
+            if (mode === 'puntual') {
+                const q = parseFloat(document.getElementById('campo-q').value);
+                const r = parseFloat(document.getElementById('campo-r').value);
+
+                if (isNaN(q) || isNaN(r) || r <= 0) {
+                    alert('Ingresa valores válidos (Distancia r debe ser mayor a 0).');
+                    return;
+                }
+                eField = k_e * (Math.abs(q) / Math.pow(r, 2));
+            } else {
+                const f = parseFloat(document.getElementById('campo-f').value);
+                const q0 = parseFloat(document.getElementById('campo-q0').value);
+
+                if (isNaN(f) || isNaN(q0) || q0 === 0) {
+                    alert('Ingresa valores válidos (Carga q0 no puede ser 0).');
+                    return;
+                }
+                eField = Math.abs(f / q0);
+            }
+
+            document.getElementById('campo-result').innerText = `${eField.toFixed(2)} N/C`;
+            document.getElementById('campo-sci').innerText = `${toSci(eField)} N/C`;
+        }
+
+        // 3. FLUJO ELÉCTRICO Y LEY DE GAUSS
+        function calcularGauss() {
+            const e = parseFloat(document.getElementById('gauss-e').value);
+            const a = parseFloat(document.getElementById('gauss-a').value);
+            const angleDeg = parseFloat(document.getElementById('gauss-angle').value);
+
+            if (isNaN(e) || isNaN(a) || isNaN(angleDeg)) {
+                alert('Ingresa valores numéricos válidos.');
+                return;
+            }
+
+            const angleRad = (angleDeg * Math.PI) / 180;
+            const flujo = e * a * Math.cos(angleRad);
+            const qEnc = flujo * eps_0;
+
+            document.getElementById('gauss-flujo-res').innerText = `${flujo.toFixed(2)} N·m²/C`;
+            document.getElementById('gauss-qenc-res').innerText = `${toSci(qEnc)} C`;
+        }
+
+        // 4. POTENCIAL ELÉCTRICO
+        function togglePotencialInputs() {
+            const mode = document.querySelector('input[name="potencial-mode"]:checked').value;
+            if (mode === 'puntual') {
+                document.getElementById('potencial-inputs-puntual').classList.remove('hidden');
+                document.getElementById('potencial-inputs-energia').classList.add('hidden');
+            } else {
+                document.getElementById('potencial-inputs-puntual').classList.add('hidden');
+                document.getElementById('potencial-inputs-energia').classList.remove('hidden');
+            }
+        }
+
+        function calcularPotencial() {
+            const mode = document.querySelector('input[name="potencial-mode"]:checked').value;
+            let vRes = 0;
+
+            if (mode === 'puntual') {
+                const q = parseFloat(document.getElementById('potencial-q').value);
+                const r = parseFloat(document.getElementById('potencial-r').value);
+
+                if (isNaN(q) || isNaN(r) || r <= 0) {
+                    alert('Ingresa valores válidos (Distancia r debe ser mayor a 0).');
+                    return;
+                }
+                vRes = k_e * (q / r);
+            } else {
+                const u = parseFloat(document.getElementById('potencial-u').value);
+                const q0 = parseFloat(document.getElementById('potencial-q0').value);
+
+                if (isNaN(u) || isNaN(q0) || q0 === 0) {
+                    alert('Ingresa valores válidos (Carga q0 no puede ser 0).');
+                    return;
+                }
+                vRes = u / q0;
+            }
+
+            document.getElementById('potencial-result').innerText = `${vRes.toFixed(2)} V`;
+            document.getElementById('potencial-sci').innerText = `${toSci(vRes)} V`;
+        }
+
+        // 5. CAPACITANCIA Y CIRCUITOS
+        function addCapacitorInput() {
+            const container = document.getElementById('capacitors-container');
+            const count = container.children.length + 1;
+
+            const div = document.createElement('div');
+            div.className = 'cap-item bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 relative';
+            div.innerHTML = `
+                <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span>Capacitor $C_{${count}}$ ($\mu\text{F}$)</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-rose-400 hover:text-rose-300 transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <input type="number" step="any" value="10" class="cap-val w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none">
+            `;
+            container.appendChild(div);
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([div]);
+            }
+        }
+
+        function calcularCircuitosCapacitancia() {
+            const config = document.querySelector('input[name="cap-config"]:checked').value;
+            const inputs = document.querySelectorAll('.cap-val');
+            let values = [];
+
+            inputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val > 0) {
+                    values.push(val);
+                }
+            });
+
+            if (values.length === 0) {
+                alert('Por favor agrega al menos un capacitor con un valor válido (mayor a 0).');
+                return;
+            }
+
+            let cEq = 0; // en microfaradios (μF)
+
+            if (config === 'paralelo') {
+                cEq = values.reduce((acc, curr) => acc + curr, 0);
+            } else {
+                const sumInverse = values.reduce((acc, curr) => acc + (1 / curr), 0);
+                cEq = 1 / sumInverse;
+            }
+
+            const cEqFarads = cEq * 1e-6; // Conversión a Faradios (F)
+
+            document.getElementById('cap-eq-result').innerText = `${cEq.toFixed(2)} μF`;
+            document.getElementById('cap-eq-farads').innerText = `${toSci(cEqFarads)} Faradios (F)`;
+        }
+    </script>
+</body>
+</html>
