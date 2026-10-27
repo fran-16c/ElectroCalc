@@ -120,7 +120,7 @@
                 </header>
 
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm text-slate-300 space-y-3">
-                    <p><strong class="text-blue-400"><i class="fa-solid fa-book-open"></i> Descripción Conceptual Detallada:</strong> Formmulada por el físico francés Charles-Augustin de Coulomb en 1785, esta ley fundamental rige la interacción electrostática entre cargas eléctricas estacionarias. La magnitud de la fuerza electrostática actúa a lo largo de la línea que une a ambas cargas puntuales. Es directamente proporcional al producto escalar de las cargas e inversamente proporcional al cuadrado de la distancia que las separa ($1/r^2$). Esto implica que al duplicar la distancia, la fuerza disminuye a la cuarta parte. Físicamente, las cargas con igual polaridad experimentan una fuerza de repulsión mutua, mientras que las de polaridades opuestas se atraen.</p>
+                    <p><strong class="text-blue-400"><i class="fa-solid fa-book-open"></i> Descripción Conceptual Detallada:</strong> Formulada por el físico francés Charles-Augustin de Coulomb en 1785, esta ley fundamental rige la interacción electrostática entre cargas eléctricas estacionarias. La magnitud de la fuerza electrostática actúa a lo largo de la línea que une a ambas cargas puntuales. Es directamente proporcional al producto escalar de las cargas e inversamente proporcional al cuadrado de la distancia que las separa ($1/r^2$). Esto implica que al duplicar la distancia, la fuerza disminuye a la cuarta parte. Físicamente, las cargas con igual polaridad experimentan una fuerza de repulsión mutua, mientras que las de polaridades opuestas se atraen.</p>
                 </div>
 
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
@@ -209,6 +209,17 @@
                         </div>
 
                         <button onclick="calcularCampo()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-xl transition duration-200 shadow-lg shadow-blue-600/30">Calcular Campo</button>
+
+                        <!-- Enlace a Simulador/Calculadora Externa de Campo Eléctrico -->
+                        <div class="pt-2 text-center">
+                            <a href="https://phet.colorado.edu/sims/html/charges-and-fields/latest/charges-and-fields_all.html?locale=es" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="inline-flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 hover:underline transition duration-150">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                                Abrir simulador de Campo Eléctrico (PhET Interactive)
+                            </a>
+                        </div>
                     </div>
 
                     <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
@@ -441,93 +452,54 @@
             }
 
             const force = k_e * (Math.abs(q1 * q2) / Math.pow(r, 2));
-
             document.getElementById('coulomb-result').innerText = `${force.toFixed(4)} N`;
             document.getElementById('coulomb-sci').innerText = `${toSci(force)} N`;
 
-            dibujarCoulomb(q1 * q2 > 0, r, force);
+            dibujarCoulomb(q1, q2, r, force);
         }
 
-        function dibujarCoulomb(sameSign, rVal, forceVal) {
+        function dibujarCoulomb(q1, q2, r, force) {
             const canvas = document.getElementById('canvas-coulomb');
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 280;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerY = canvas.height / 2 - 10;
-            let halfDist = Math.min(canvas.width * 0.35, Math.max(60, rVal * 120));
-            const x1 = canvas.width / 2 - halfDist;
-            const x2 = canvas.width / 2 + halfDist;
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerY = h / 2;
 
-            // Carga 1
-            ctx.beginPath();
-            ctx.arc(x1, centerY, 26, 0, 2 * Math.PI);
-            ctx.fillStyle = '#3b82f6';
-            ctx.fill();
+            // Dibujar línea de separación
+            ctx.strokeStyle = '#334155';
             ctx.lineWidth = 2;
-            ctx.strokeStyle = '#60a5fa';
-            ctx.stroke();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 13px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('q₁', x1, centerY + 5);
-
-            // Carga 2
-            ctx.beginPath();
-            ctx.arc(x2, centerY, 26, 0, 2 * Math.PI);
-            ctx.fillStyle = '#6366f1';
-            ctx.fill();
-            ctx.strokeStyle = '#818cf8';
-            ctx.stroke();
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText('q₂', x2, centerY + 5);
-
-            // Línea de distancia
-            ctx.beginPath();
-            ctx.moveTo(x1 + 26, centerY + 40);
-            ctx.lineTo(x2 - 26, centerY + 40);
-            ctx.strokeStyle = '#94a3b8';
             ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(w * 0.2, centerY);
+            ctx.lineTo(w * 0.8, centerY);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.font = '12px sans-serif';
-            ctx.fillStyle = '#cbd5e1';
-            ctx.fillText(`r = ${rVal} m`, (x1 + x2) / 2, centerY + 60);
 
-            // Vectores de fuerza
-            const arrowLen = 55;
-            ctx.strokeStyle = '#f59e0b';
-            ctx.fillStyle = '#f59e0b';
-            ctx.lineWidth = 3;
-
-            if (sameSign) {
-                dibujarFlecha(ctx, x1 - 28, centerY - 20, x1 - 28 - arrowLen, centerY - 20);
-                dibujarFlecha(ctx, x2 + 28, centerY - 20, x2 + 28 + arrowLen, centerY - 20);
-            } else {
-                dibujarFlecha(ctx, x1 + 28, centerY - 20, x1 + 28 + arrowLen, centerY - 20);
-                dibujarFlecha(ctx, x2 - 28, centerY - 20, x2 - 28 - arrowLen, centerY - 20);
-            }
-            ctx.font = 'bold 12px sans-serif';
-            ctx.fillText(`F = ${forceVal.toFixed(3)} N`, (x1 + x2) / 2, centerY - 35);
-        }
-
-        function dibujarFlecha(ctx, fromX, fromY, toX, toY) {
-            const headLen = 9;
-            const angle = Math.atan2(toY - fromY, toX - fromX);
+            // Carga 1
+            ctx.fillStyle = q1 >= 0 ? '#3b82f6' : '#ef4444';
             ctx.beginPath();
-            ctx.moveTo(fromX, fromY);
-            ctx.lineTo(toX, toY);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(toX, toY);
-            ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
-            ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
-            ctx.lineTo(toX, toY);
-            ctx.fillStyle = ctx.strokeStyle;
+            ctx.arc(w * 0.2, centerY, 20, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(q1 >= 0 ? '+q1' : '-q1', w * 0.2, centerY);
+
+            // Carga 2
+            ctx.fillStyle = q2 >= 0 ? '#3b82f6' : '#ef4444';
+            ctx.beginPath();
+            ctx.arc(w * 0.8, centerY, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(q2 >= 0 ? '+q2' : '-q2', w * 0.8, centerY);
+
+            // Texto descriptivo de la fuerza
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px sans-serif';
+            ctx.fillText(`F = ${force > 1 ? force.toFixed(2) : toSci(force)} N (r = ${r}m)`, w / 2, centerY - 25);
         }
 
         // --- 2. CAMPO ELÉCTRICO ---
@@ -544,68 +516,63 @@
 
         function calcularCampo() {
             const mode = document.querySelector('input[name="campo-mode"]:checked').value;
-            let eField = 0;
-            let qVal = 5e-9;
+            let E = 0;
 
             if (mode === 'puntual') {
                 const q = parseFloat(document.getElementById('campo-q').value);
                 const r = parseFloat(document.getElementById('campo-r').value);
                 if (isNaN(q) || isNaN(r) || r <= 0) { alert('Valores inválidos.'); return; }
-                eField = k_e * (Math.abs(q) / Math.pow(r, 2));
-                qVal = q;
+                E = k_e * (Math.abs(q) / Math.pow(r, 2));
             } else {
-                const f = parseFloat(document.getElementById('campo-f').value);
+                const F = parseFloat(document.getElementById('campo-f').value);
                 const q0 = parseFloat(document.getElementById('campo-q0').value);
-                if (isNaN(f) || isNaN(q0) || q0 <= 0) { alert('Valores inválidos.'); return; }
-                eField = f / q0;
+                if (isNaN(F) || isNaN(q0) || q0 === 0) { alert('Valores inválidos.'); return; }
+                E = F / q0;
             }
 
-            document.getElementById('campo-result').innerText = `${eField.toFixed(2)} N/C`;
-            document.getElementById('campo-sci').innerText = `${toSci(eField)} N/C`;
-
-            dibujarCampo(qVal >= 0, eField);
+            document.getElementById('campo-result').innerText = `${E.toFixed(2)} N/C`;
+            document.getElementById('campo-sci').innerText = `${toSci(E)} N/C`;
+            dibujarCampo(E);
         }
 
-        function dibujarCampo(isPositive, eVal) {
+        function dibujarCampo(E) {
             const canvas = document.getElementById('canvas-campo');
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 280;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
 
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Carga central
+            ctx.fillStyle = '#3b82f6';
             ctx.beginPath();
-            ctx.arc(cx, cy, 22, 0, 2 * Math.PI);
-            ctx.fillStyle = isPositive ? '#ef4444' : '#3b82f6';
+            ctx.arc(cx, cy, 15, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(isPositive ? '+' : '-', cx, cy + 5);
 
-            const numLines = 12;
-            const radius = 95;
-            for (let i = 0; i < numLines; i++) {
-                const angle = (i * 2 * Math.PI) / numLines;
-                const startX = cx + 26 * Math.cos(angle);
-                const startY = cy + 26 * Math.sin(angle);
-                const endX = cx + radius * Math.cos(angle);
-                const endY = cy + radius * Math.sin(angle);
+            // Rayos de campo eléctrico simulados
+            ctx.strokeStyle = '#60a5fa';
+            ctx.lineWidth = 1.5;
+            const rays = 8;
+            const radius = 70;
+            for (let i = 0; i < rays; i++) {
+                const angle = (i * 2 * Math.PI) / rays;
+                const x1 = cx + Math.cos(angle) * 20;
+                const y1 = cy + Math.sin(angle) * 20;
+                const x2 = cx + Math.cos(angle) * radius;
+                const y2 = cy + Math.sin(angle) * radius;
 
-                ctx.strokeStyle = '#60a5fa';
-                ctx.lineWidth = 2;
-                if (isPositive) {
-                    dibujarFlecha(ctx, startX, startY, endX, endY);
-                } else {
-                    dibujarFlecha(ctx, endX, endY, startX, startY);
-                }
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
             }
 
             ctx.fillStyle = '#94a3b8';
-            ctx.font = '12px sans-serif';
-            ctx.fillText(`Intensidad E = ${eVal > 1000 ? toSci(eVal) : eVal.toFixed(1)} N/C`, cx, canvas.height - 15);
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Intensidad de Campo E = ${toSci(E)} N/C`, cx, h - 15);
         }
 
         // --- 3. LEY DE GAUSS ---
@@ -618,52 +585,40 @@
 
             const angleRad = (angleDeg * Math.PI) / 180;
             const flujo = E * A * Math.cos(angleRad);
-            const qEnc = flujo * eps_0;
+            const qEncerrada = flujo * eps_0;
 
-            document.getElementById('gauss-flujo-res').innerText = `${flujo.toFixed(2)} N·m²/C`;
-            document.getElementById('gauss-qenc-res').innerText = `${toSci(qEnc)} C`;
+            document.getElementById('gauss-flujo-res').innerText = `${flujo > 10 ? flujo.toFixed(2) : toSci(flujo)} N·m²/C`;
+            document.getElementById('gauss-qenc-res').innerText = `${toSci(qEncerrada)} C`;
 
-            dibujarGauss(A);
+            dibujarGauss(flujo);
         }
 
-        function dibujarGauss(aVal) {
+        function dibujarGauss(flujo) {
             const canvas = document.getElementById('canvas-gauss');
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 280;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2 - 10;
 
-            const radius = Math.min(95, Math.max(50, Math.sqrt(aVal) * 45));
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
 
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(59, 130, 246, 0.12)';
-            ctx.fill();
-            ctx.lineWidth = 2.5;
-            ctx.strokeStyle = '#3b82f6';
-            ctx.setLineDash([8, 6]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.beginPath();
-            ctx.arc(cx, cy, 12, 0, 2 * Math.PI);
-            ctx.fillStyle = '#f59e0b';
-            ctx.fill();
-
-            ctx.strokeStyle = '#60a5fa';
+            // Superficie gaussiana (Esfera simulada)
+            ctx.strokeStyle = '#6366f1';
             ctx.lineWidth = 2;
-            for (let i = 0; i < 5; i++) {
-                const yOffset = -60 + i * 30;
-                dibujarFlecha(ctx, cx - 120, cy + yOffset, cx + 120, cy + yOffset);
-            }
+            ctx.beginPath();
+            ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+            ctx.stroke();
 
-            ctx.fillStyle = '#cbd5e1';
-            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '11px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`Superficie Gaussiana (A = ${aVal} m²)`, cx, canvas.height - 15);
+            ctx.fillText('Superficie Gaussiana', cx, cy - 5);
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Φ = ${toSci(flujo)}`, cx, cy + 15);
         }
 
         // --- 4. POTENCIAL ELÉCTRICO ---
@@ -680,59 +635,53 @@
 
         function calcularPotencial() {
             const mode = document.querySelector('input[name="potencial-mode"]:checked').value;
-            let vVal = 0;
-            let rVal = 0.2;
+            let V = 0;
 
             if (mode === 'puntual') {
                 const q = parseFloat(document.getElementById('potencial-q').value);
                 const r = parseFloat(document.getElementById('potencial-r').value);
                 if (isNaN(q) || isNaN(r) || r <= 0) { alert('Valores inválidos.'); return; }
-                vVal = k_e * (q / r);
-                rVal = r;
+                V = k_e * (q / r);
             } else {
-                const u = parseFloat(document.getElementById('potencial-u').value);
+                const U = parseFloat(document.getElementById('potencial-u').value);
                 const q0 = parseFloat(document.getElementById('potencial-q0').value);
-                if (isNaN(u) || isNaN(q0) || q0 <= 0) { alert('Valores inválidos.'); return; }
-                vVal = u / q0;
+                if (isNaN(U) || isNaN(q0) || q0 === 0) { alert('Valores inválidos.'); return; }
+                V = U / q0;
             }
 
-            document.getElementById('potencial-result').innerText = `${vVal.toFixed(2)} V`;
-            document.getElementById('potencial-sci').innerText = `${toSci(vVal)} V`;
-
-            dibujarPotencial(vVal, rVal);
+            document.getElementById('potencial-result').innerText = `${V.toFixed(2)} V`;
+            document.getElementById('potencial-sci').innerText = `${toSci(V)} V`;
+            dibujarPotencial(V);
         }
 
-        function dibujarPotencial(vVal, rVal) {
+        function dibujarPotencial(V) {
             const canvas = document.getElementById('canvas-potencial');
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 280;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2 - 10;
 
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Anillos equipotenciales
+            for (let r = 30; r < 100; r += 20) {
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#3b82f6';
             ctx.beginPath();
-            ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ef4444';
+            ctx.arc(cx, cy, 10, 0, Math.PI * 2);
             ctx.fill();
 
-            const baseRad = Math.min(40, Math.max(25, rVal * 120));
-            const radii = [baseRad, baseRad * 1.8, baseRad * 2.6];
-            const colors = ['#3b82f6', '#6366f1', '#8b5cf6'];
-
-            radii.forEach((rad, idx) => {
-                ctx.beginPath();
-                ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
-                ctx.strokeStyle = colors[idx];
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            });
-
-            ctx.fillStyle = '#cbd5e1';
-            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '11px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`Potencial V = ${vVal > 1000 ? toSci(vVal) : vVal.toFixed(1)} V`, cx, canvas.height - 15);
+            ctx.fillText(`Potencial V = ${toSci(V)} V`, cx, h - 15);
         }
 
         // --- 5. CAPACITANCIA Y CIRCUITOS ---
@@ -743,121 +692,62 @@
             div.className = 'cap-item bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 relative';
             div.innerHTML = `
                 <div class="flex justify-between items-center text-xs text-slate-400">
-                    <span>Capacitor C_${count} (\\(\\mu\\text{F}\\))</span>
-                    <button onclick="this.parentElement.parentElement.remove();" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                    <span>Capacitor $C_${count}$ (\\mu\\text{F})</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <input type="number" step="any" value="${10 * count}" class="cap-val w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none">
+                <input type="number" step="any" value="10" class="cap-val w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none">
             `;
             container.appendChild(div);
         }
 
         function calcularCircuitosCapacitancia() {
             const config = document.querySelector('input[name="cap-config"]:checked').value;
-            const capInputs = document.querySelectorAll('.cap-val');
+            const inputs = document.querySelectorAll('.cap-val');
             let values = [];
 
-            capInputs.forEach(input => {
+            inputs.forEach(input => {
                 const val = parseFloat(input.value);
                 if (!isNaN(val) && val > 0) values.push(val);
             });
 
             if (values.length === 0) { alert('Ingresa al menos un capacitor válido.'); return; }
 
-            let C_eq = 0;
+            let Ceq = 0;
             if (config === 'paralelo') {
-                C_eq = values.reduce((acc, curr) => acc + curr, 0);
+                Ceq = values.reduce((a, b) => a + b, 0);
             } else {
-                let inverseSum = values.reduce((acc, curr) => acc + (1 / curr), 0);
-                C_eq = 1 / inverseSum;
+                let inverseSum = values.reduce((sum, val) => sum + (1 / val), 0);
+                Ceq = 1 / inverseSum;
             }
 
-            document.getElementById('cap-eq-result').innerText = `${C_eq.toFixed(2)} μF`;
-            document.getElementById('cap-eq-farads').innerText = `${(C_eq * 1e-6).toExponential(3)} Faradios (F)`;
+            const farads = Ceq * 1e-6;
+            document.getElementById('cap-eq-result').innerText = `${Ceq.toFixed(2)} μF`;
+            document.getElementById('cap-eq-farads').innerText = `${toSci(farads)} Faradios (F)`;
 
-            dibujarCapacitores(config, values, C_eq);
+            dibujarCircuitos(config, values, Ceq);
         }
 
-        function dibujarCapacitores(config, values, cEq) {
+        function dibujarCircuitos(config, values, Ceq) {
             const canvas = document.getElementById('canvas-capacitores');
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = 280;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cy = canvas.height / 2 - 15;
-            const count = values.length;
 
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 2.5;
-            ctx.fillStyle = '#ffffff';
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.fillStyle = '#94a3b8';
             ctx.font = '12px sans-serif';
-
-            if (config === 'paralelo') {
-                ctx.beginPath();
-                ctx.moveTo(35, cy - 60);
-                ctx.lineTo(canvas.width - 35, cy - 60);
-                ctx.moveTo(35, cy + 60);
-                ctx.lineTo(canvas.width - 35, cy + 60);
-                ctx.stroke();
-
-                const stepX = (canvas.width - 70) / (count + 1);
-                values.forEach((val, i) => {
-                    const x = 35 + stepX * (i + 1);
-                    ctx.beginPath();
-                    ctx.moveTo(x, cy - 60); ctx.lineTo(x, cy - 18);
-                    ctx.moveTo(x, cy + 60); ctx.lineTo(x, cy + 18);
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.moveTo(x - 14, cy - 18); ctx.lineTo(x + 14, cy - 18);
-                    ctx.moveTo(x - 14, cy + 18); ctx.lineTo(x + 14, cy + 18);
-                    ctx.stroke();
-
-                    ctx.fillText(`C${i+1}=${val}μF`, x, cy - 70);
-                    ctx.textAlign = 'center';
-                });
-            } else {
-                const stepX = (canvas.width - 70) / (count + 1);
-                ctx.beginPath();
-                ctx.moveTo(35, cy);
-                let currentX = 35;
-
-                values.forEach((val, i) => {
-                    const nextX = currentX + stepX;
-                    ctx.lineTo(nextX - 18, cy);
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.moveTo(nextX - 18, cy - 20); ctx.lineTo(nextX - 18, cy + 20);
-                    ctx.moveTo(nextX - 8, cy - 20); ctx.lineTo(nextX - 8, cy + 20);
-                    ctx.stroke();
-
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`C${i+1}:${val}μF`, nextX - 13, cy - 30);
-
-                    ctx.beginPath();
-                    ctx.moveTo(nextX - 8, cy);
-                    currentX = nextX;
-                });
-                ctx.lineTo(canvas.width - 35, cy);
-                ctx.stroke();
-            }
-
-            ctx.fillStyle = '#60a5fa';
-            ctx.font = 'bold 13px sans-serif';
-            ctx.fillText(`C_eq = ${cEq.toFixed(2)} μF`, canvas.width / 2, canvas.height - 20);
+            ctx.textAlign = 'center';
+            ctx.fillText(`Configuración: ${config.toUpperCase()} (${values.length} elementos)`, w / 2, 30);
+            ctx.fillText(`Ceq = ${Ceq.toFixed(2)} μF`, w / 2, h - 20);
         }
 
         function actualizarTodasLasGraficas() {
             calcularCoulomb();
-            calcularCampo();
-            calcularGauss();
-            calcularPotencial();
-            calcularCircuitosCapacitancia();
         }
 
-        window.onload = function() {
-            actualizarTodasLasGraficas();
+        window.onload = () => {
+            calcularCoulomb();
         };
     </script>
 </body>
